@@ -39,6 +39,7 @@ const (
 	Lshortfile                    // final file name element and line number: d.go:23. overrides Llongfile
 	LUTC                          // if Ldate or Ltime is set, use UTC rather than the local time zone
 	LstdFlags     = Ldate | Ltime // initial values for the standard logger
+	Lbefore                       // Display flag output before prefix
 )
 
 // A Logger represents an active logging object that generates lines of
@@ -88,7 +89,16 @@ func itoa(buf *[]byte, i int, wid int) {
 }
 
 func (l *Logger) formatHeader(buf *[]byte, t time.Time, file string, line int) {
-	*buf = append(*buf, l.prefix...)
+        if l.flag&Lbefore != 0 {
+            *buf = formatFlags(&buf, t, file, line)
+	    *buf = append(*buf, l.prefix...)
+        } else {
+	    *buf = append(*buf, l.prefix...)
+            *buf = formatFlags(&buf, t, file, line)
+        }
+}
+
+func (l *Logger) formatFlags(buf *[]byte, t time.Time, file string, line int) buf *[] {
 	if l.flag&LUTC != 0 {
 		t = t.UTC()
 	}
